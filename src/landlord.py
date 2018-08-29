@@ -17,7 +17,13 @@ class LandloardRule(BasicRule):
             # If any of the card is joker, big joker get the highest, then the small joker
             return card1.suit > card2.suit
         else:
-            return card1.rank > card2.rank
+            # 2 is higher than A
+            if card1.rank == 0:
+                return True
+            elif card2.rank == 0:
+                return False
+            else:
+                return card1.rank > card2.rank
 
     def possibilities(self, desk_cards, hand_cards):
         """
@@ -38,8 +44,6 @@ class LandloardRule(BasicRule):
 
 if __name__ == '__main__':
     from poker import Deck, Card
-
-    LandloardRule().possibilities([Card('4v')], [Card('2s'), Card('5c')])
 
     deck = Deck(has_jokers=True)
     player1_hand = deck.draw(17)

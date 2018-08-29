@@ -12,6 +12,7 @@ termcolor = "*"
 
 [dev-packages]
 
+pytest = "*"
 
 
 [requires]

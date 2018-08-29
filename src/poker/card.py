@@ -10,6 +10,9 @@ class Card(object):
     def __str__(self):
         return CardFactory.int_to_pretty_str(self.card_int)
 
+    def __eq__(self, other):
+        return self.suit == other.suit and self.rank == other.rank
+
     @property
     def suit(self):
         suit_int = CardFactory.get_suit_int(self.card_int)

@@ -1,5 +1,8 @@
 from random import shuffle
-from .card import Card
+
+from src.poker.card import Card
+from .cardFactory import CardFactory
+
 
 class Deck(object):
     """
@@ -28,7 +31,7 @@ class Deck(object):
         return cards
 
     def __str__(self):
-        return Card.print_pretty_cards(self.cards)
+        return CardFactory.print_pretty_cards(self.cards)
 
     @staticmethod
     def GetFullDeck(has_jokers=False):
@@ -36,11 +39,11 @@ class Deck(object):
             return list(Deck._FULL_DECK)
 
         # create the standard 52 card deck
-        for rank in Card.STR_RANKS:
+        for rank in CardFactory.STR_RANKS:
             for suit in 'shdc':
-                Deck._FULL_DECK.append(Card.new(rank + suit))
+                Deck._FULL_DECK.append(Card(rank + suit))
 
         if has_jokers:
-            Deck._FULL_DECK.append(Card.new('2u'))
-            Deck._FULL_DECK.append(Card.new('2v'))
+            Deck._FULL_DECK.append(Card('2u'))
+            Deck._FULL_DECK.append(Card('2v'))
         return list(Deck._FULL_DECK)

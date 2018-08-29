@@ -1,5 +1,5 @@
 import itertools
-from .card import Card
+from .cardFactory import CardFactory
 
 class LookupTable(object):
     """
@@ -126,7 +126,7 @@ class LookupTable(object):
         # rank 1 = Royal Flush!
         rank = 1
         for sf in straight_flushes:
-            prime_product = Card.prime_product_from_rankbits(sf)
+            prime_product = CardFactory.prime_product_from_rankbits(sf)
             self.flush_lookup[prime_product] = rank
             rank += 1
 
@@ -134,7 +134,7 @@ class LookupTable(object):
         # is the worst rank that a full house can have (2,2,2,3,3)
         rank = LookupTable.MAX_FULL_HOUSE + 1
         for f in flushes:
-            prime_product = Card.prime_product_from_rankbits(f)
+            prime_product = CardFactory.prime_product_from_rankbits(f)
             self.flush_lookup[prime_product] = rank
             rank += 1
 
@@ -152,13 +152,13 @@ class LookupTable(object):
         rank = LookupTable.MAX_FLUSH + 1
 
         for s in straights:
-            prime_product = Card.prime_product_from_rankbits(s)
+            prime_product = CardFactory.prime_product_from_rankbits(s)
             self.unsuited_lookup[prime_product] = rank
             rank += 1
 
         rank = LookupTable.MAX_PAIR + 1
         for h in highcards:
-            prime_product = Card.prime_product_from_rankbits(h)
+            prime_product = CardFactory.prime_product_from_rankbits(h)
             self.unsuited_lookup[prime_product] = rank
             rank += 1
 
@@ -166,7 +166,7 @@ class LookupTable(object):
         """
         Pair, Two Pair, Three of a Kind, Full House, and 4 of a Kind.
         """
-        backwards_ranks = range(len(Card.INT_RANKS) - 1, -1, -1)
+        backwards_ranks = range(len(CardFactory.INT_RANKS) - 1, -1, -1)
 
         # 1) Four of a Kind
         rank = LookupTable.MAX_STRAIGHT_FLUSH + 1
@@ -178,7 +178,7 @@ class LookupTable(object):
             kickers = backwards_ranks[:]
             kickers.remove(i)
             for k in kickers:
-                product = Card.PRIMES[i]**4 * Card.PRIMES[k]
+                product = CardFactory.PRIMES[i] ** 4 * CardFactory.PRIMES[k]
                 self.unsuited_lookup[product] = rank
                 rank += 1
         
@@ -192,7 +192,7 @@ class LookupTable(object):
             pairranks = backwards_ranks[:]
             pairranks.remove(i)
             for pr in pairranks:
-                product = Card.PRIMES[i]**3 * Card.PRIMES[pr]**2
+                product = CardFactory.PRIMES[i] ** 3 * CardFactory.PRIMES[pr] ** 2
                 self.unsuited_lookup[product] = rank
                 rank += 1
 
@@ -209,7 +209,7 @@ class LookupTable(object):
             for kickers in gen:
 
                 c1, c2 = kickers
-                product = Card.PRIMES[r]**3 * Card.PRIMES[c1] * Card.PRIMES[c2]
+                product = CardFactory.PRIMES[r] ** 3 * CardFactory.PRIMES[c1] * CardFactory.PRIMES[c2]
                 self.unsuited_lookup[product] = rank
                 rank += 1
 
@@ -225,7 +225,7 @@ class LookupTable(object):
             kickers.remove(pair2)
             for kicker in kickers:
 
-                product = Card.PRIMES[pair1]**2 * Card.PRIMES[pair2]**2 * Card.PRIMES[kicker]
+                product = CardFactory.PRIMES[pair1] ** 2 * CardFactory.PRIMES[pair2] ** 2 * CardFactory.PRIMES[kicker]
                 self.unsuited_lookup[product] = rank
                 rank += 1
 
@@ -242,8 +242,8 @@ class LookupTable(object):
             for kickers in kgen:
 
                 k1, k2, k3 = kickers
-                product = Card.PRIMES[pairrank]**2 * Card.PRIMES[k1] \
-                        * Card.PRIMES[k2] * Card.PRIMES[k3]
+                product = CardFactory.PRIMES[pairrank] ** 2 * CardFactory.PRIMES[k1] \
+                          * CardFactory.PRIMES[k2] * CardFactory.PRIMES[k3]
                 self.unsuited_lookup[product] = rank
                 rank += 1
 

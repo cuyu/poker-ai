@@ -1,7 +1,7 @@
 from random import shuffle
-from deuces.card import Card
+from .card import Card
 
-class Deck:
+class Deck(object):
     """
     Class representing a deck. The first time we create, we seed the static 
     deck with the list of unique card integers. Each object instantiated simply

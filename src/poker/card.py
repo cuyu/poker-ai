@@ -1,4 +1,4 @@
-class Card (object):
+class Card(object):
     """
     Static class that handles cards. We represent cards as 32-bit integers, so 
     there is no object instantiation - they are just ints. Most of the bits are 
@@ -8,12 +8,12 @@ class Card (object):
 
                           bitrank     suit rank   prime
                     +--------+--------+--------+--------+
-                    |xxxbbbbb|bbbbbbbb|cdhsrrrr|xxpppppp|
+                    |xxxbbbbb|bbbbbbbb|vucdhsrr|rrpppppp|
                     +--------+--------+--------+--------+
 
         1) p = prime number of rank (deuce=2,trey=3,four=5,...,ace=41)
         2) r = rank of card (deuce=0,trey=1,four=2,five=3,...,ace=12)
-        3) cdhs = suit of card (bit turned on based on suit of card)
+        3) vucdhs = suit of card (bit turned on based on suit of card)
         4) b = bit turned on depending on rank of card
         5) x = unused
 
@@ -33,23 +33,27 @@ class Card (object):
     # converstion from string => int
     CHAR_RANK_TO_INT_RANK = dict(zip(list(STR_RANKS), INT_RANKS))
     CHAR_SUIT_TO_INT_SUIT = {
-        's' : 1, # spades
-        'h' : 2, # hearts
-        'd' : 4, # diamonds
-        'c' : 8, # clubs
+        's': 1,  # spades
+        'h': 2,  # hearts
+        'd': 4,  # diamonds
+        'c': 8,  # clubs
+        'u': 16,  # small joker
+        'v': 32,  # big joker
     }
     INT_SUIT_TO_CHAR_SUIT = 'xshxdxxxc'
 
     # for pretty printing
     PRETTY_SUITS = {
-        1 : u"\u2660".encode('utf-8'), # spades
-        2 : u"\u2764".encode('utf-8'), # hearts
-        4 : u"\u2666".encode('utf-8'), # diamonds
-        8 : u"\u2663".encode('utf-8') # clubs
+        1: u"\u2660".encode('utf-8'),  # spades
+        2: u"\u2764".encode('utf-8'),  # hearts
+        4: u"\u2666".encode('utf-8'),  # diamonds
+        8: u"\u2663".encode('utf-8'),  # clubs
+        16: u"\u263e".encode('utf-8'),  # small joker
+        32: u"\u2600".encode('utf-8'),  # big joker
     }
 
-     # hearts and diamonds
-    PRETTY_REDS = [2, 4]
+    # hearts and diamonds
+    PRETTY_REDS = [2, 4, 32]
 
     @staticmethod
     def new(string):
@@ -66,8 +70,8 @@ class Card (object):
         rank_prime = Card.PRIMES[rank_int]
 
         bitrank = 1 << rank_int << 16
-        suit = suit_int << 12
-        rank = rank_int << 8
+        suit = suit_int << 10
+        rank = rank_int << 6
 
         return bitrank | suit | rank | rank_prime
 
@@ -79,11 +83,11 @@ class Card (object):
 
     @staticmethod
     def get_rank_int(card_int):
-        return (card_int >> 8) & 0xF
+        return (card_int >> 6) & 0xF
 
     @staticmethod
     def get_suit_int(card_int):
-        return (card_int >> 12) & 0xF
+        return (card_int >> 10) & 0x3F
 
     @staticmethod
     def get_bitrank_int(card_int):
@@ -153,11 +157,11 @@ class Card (object):
         For debugging purposes. Displays the binary number as a 
         human readable string in groups of four digits. 
         """
-        bstr = bin(card_int)[2:][::-1] # chop off the 0b and THEN reverse string
-        output = list("".join(["0000" +"\t"] * 7) +"0000")
+        bstr = bin(card_int)[2:][::-1]  # chop off the 0b and THEN reverse string
+        output = list("".join(["0000" + "\t"] * 7) + "0000")
 
         for i in range(len(bstr)):
-            output[i + int(i/4)] = bstr[i]
+            output[i + int(i / 4)] = bstr[i]
 
         # output the string to console
         output.reverse()
@@ -168,14 +172,14 @@ class Card (object):
         """
         Prints a single card 
         """
-        
+
         color = False
         try:
             from termcolor import colored
             ### for mac, linux: http://pypi.python.org/pypi/termcolor
             ### can use for windows: http://pypi.python.org/pypi/colorama
             color = True
-        except ImportError: 
+        except ImportError:
             pass
 
         # suit and rank
@@ -189,7 +193,10 @@ class Card (object):
 
         r = Card.STR_RANKS[rank_int]
 
-        return " [ " +r+ " " +str(s)+ " ] "
+        if suit_int < 16:
+            return " [ " + r + " " + str(s) + " ] "
+        else:
+            return " [ " + str(s) + " ] "
 
     @staticmethod
     def print_pretty_card(card_int):
@@ -210,5 +217,5 @@ class Card (object):
                 output += Card.int_to_pretty_str(c) + ","
             else:
                 output += Card.int_to_pretty_str(c) + " "
-    
+
         print(output)

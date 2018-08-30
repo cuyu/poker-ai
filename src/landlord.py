@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from .poker.card import Card
 
 
 class BasicRule(object):
@@ -7,7 +8,7 @@ class BasicRule(object):
         pass
 
 
-class LandloardRule(BasicRule):
+class LandlordRule(BasicRule):
     def __int__(self):
         pass
 
@@ -39,8 +40,31 @@ class LandloardRule(BasicRule):
                 i += 1
         return result
 
+    def all_possibilities(self, hand_cards):
+        """
+        List all the possibilities according the cards in hands (assuming the desk is empty).
+        :param hand_cards: a list of Card
+        :return: a list of set of Card
+        """
+        result = []
+        # Todo: add more kinds of desk cards
+        assume_desk_cards = [
+            [Card(rank=-1)],
+            [Card(rank=-1), Card(rank=-1)],
+            [Card(rank=-1), Card(rank=-1), Card(rank=-1)],
+            [Card(rank=-1), Card(rank=-1), Card(rank=-1), Card(rank=-1)],
+            [Card(rank=-1), Card(rank=-1), Card(rank=-1), Card(rank=-2)],
+            [Card(rank=-1), Card(rank=-1), Card(rank=-1), Card(rank=-2), Card(rank=-2)],
+            [Card(rank=-1), Card(rank=-2), Card(rank=-3), Card(rank=-4), Card(rank=-5)],
+        ]
+        for desk_cards in assume_desk_cards:
+            result += self.possibilities(desk_cards, hand_cards)
+
+        return result
+
     def possibilities(self, desk_cards, hand_cards):
         """
+        List possibilities according to the cards in desk and cards in hands
         :param desk: a list of Card
         :param hand: a list of Card
         :return: a list of set of Card
@@ -67,6 +91,8 @@ class LandloardRule(BasicRule):
                     for card in hand_cards:
                         if card not in possibility:
                             result.append({*possibility, card})
+        elif len(desk_cards) == 5:
+            pass
         return result
 
 

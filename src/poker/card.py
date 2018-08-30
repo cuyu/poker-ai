@@ -4,8 +4,14 @@ from .cardFactory import CardFactory
 
 
 class Card(object):
-    def __init__(self, card_string):
-        self.card_int = CardFactory.new(card_string)
+    def __init__(self, card_string='', suit=None, rank=None):
+        """
+        Do not use suit and rank to init unless in card rule class, as by this method, we can get some
+        impossible card like rank=-1.
+        """
+        self.card_int = CardFactory.new(card_string) if card_string else 0
+        self._suit = suit
+        self._rank = rank
 
     def __str__(self):
         return CardFactory.int_to_pretty_str(self.card_int)
@@ -21,10 +27,10 @@ class Card(object):
 
     @property
     def suit(self):
-        suit_int = CardFactory.get_suit_int(self.card_int)
+        suit_int = self._suit or CardFactory.get_suit_int(self.card_int)
         # todo: return sth more readable?
         return suit_int
 
     @property
     def rank(self):
-        return CardFactory.get_rank_int(self.card_int)
+        return self._rank or CardFactory.get_rank_int(self.card_int)

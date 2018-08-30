@@ -7,5 +7,9 @@
   "test_landlord_rule.py::test_full_house_in_desk",
   "test_landlord_rule.py::test_four_same_card_and_two_single_card_in_desk",
   "test_landlord_rule.py::test_five_card_straight_in_desk",
-  "test_landlord_rule.py::test_three_pairs_in_desk"
+  "test_landlord_rule.py::test_long_straight_in_desk",
+  "test_landlord_rule.py::test_three_pairs_in_desk",
+  "test_landlord_rule.py::test_four_same_card_in_hand",
+  "test_landlord_rule.py::test_super_bomb_in_hand",
+  "test_landlord_rule.py::test_all_possibilities"
 ]

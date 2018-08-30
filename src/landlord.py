@@ -38,11 +38,20 @@ class LandloardRule(BasicRule):
                     result.append({card})
         elif len(desk_cards) == 2:
             assert desk_cards[0].rank == desk_cards[1].rank
-            for card in hand_cards:
-                if self.higher(card, desk_cards[0]):
-                    for card2 in hand_cards:
-                        if card2.rank == card.rank and card2 != card:
-                            result.append({card, card2})
+            for i in range(len(hand_cards)):
+                if self.higher(hand_cards[i], desk_cards[0]):
+                    for j in range(i + 1, len(hand_cards)):
+                        if hand_cards[i].rank == hand_cards[j].rank:
+                            result.append({hand_cards[i], hand_cards[j]})
+        elif len(desk_cards) == 3:
+            assert desk_cards[0].rank == desk_cards[1].rank == desk_cards[2].rank
+            for i in range(len(hand_cards)):
+                if self.higher(hand_cards[i], desk_cards[0]):
+                    for j in range(i + 1, len(hand_cards)):
+                        if hand_cards[i].rank == hand_cards[j].rank:
+                            for k in range(j + 1, len(hand_cards)):
+                                if hand_cards[k].rank == hand_cards[j].rank:
+                                    result.append({hand_cards[i], hand_cards[j], hand_cards[k]})
 
         return result
 

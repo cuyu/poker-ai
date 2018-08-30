@@ -46,7 +46,9 @@ def test_four_same_card_and_two_single_card_in_desk():
 
 
 def test_five_card_straight_in_desk():
-    pass
+    desk = [Card('5s'), Card('6h'), Card('7c'), Card('8d'), Card('9s')]
+    hand = [Card('Js'), Card('Tc'), Card('9c'), Card('Qc'), Card('Ad'), Card('Kh'), Card('2h')]
+    assert {Card('Tc'), Card('Js'), Card('Qc'), Card('Kh'), Card('Ad')} in LandlordRule().possibilities(desk, hand)
 
 
 def test_long_straight_in_desk():

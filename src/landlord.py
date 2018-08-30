@@ -40,6 +40,23 @@ class LandlordRule(BasicRule):
                 i += 1
         return result
 
+    def _possibilities_of_straight(self, hand_cards, target_start_card, length):
+        assert length >= 5
+        result = []
+        i = 0
+        while i < len(hand_cards) - (length - 1):
+            if self.higher(hand_cards[i], target_start_card):
+                is_straight = True
+                for j in range(1, length):
+                    if not hand_cards[i + j].rank - hand_cards[i].rank == j:
+                        is_straight = False
+                        break
+                if is_straight:
+                    result.append({*hand_cards[i:i + length]})
+            i += 1
+
+        return result
+
     def all_possibilities(self, hand_cards):
         """
         List all the possibilities according the cards in hands (assuming the desk is empty).
@@ -103,10 +120,8 @@ class LandlordRule(BasicRule):
                             result.append({*p, *q})
             else:
                 # Straight
-                i = 0
-                while i < len(hand_cards) - 4:
-                    hand_cards[i].rank
-                    i += 1
+                result += self._possibilities_of_straight(hand_cards, desk_cards[0], length=5)
+
         return result
 
 

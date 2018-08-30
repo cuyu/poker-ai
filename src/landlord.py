@@ -70,6 +70,7 @@ class LandlordRule(BasicRule):
         :return: a list of set of Card
         """
         result = []
+        desk_cards.sort()
         hand_cards.sort()
         if len(desk_cards) == 1:
             for card in hand_cards:
@@ -92,7 +93,20 @@ class LandlordRule(BasicRule):
                         if card not in possibility:
                             result.append({*possibility, card})
         elif len(desk_cards) == 5:
-            pass
+            if desk_cards[0].rank == desk_cards[1].rank:
+                # Full house
+                three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)
+                two_same = self._possibilities_of_same_rank(hand_cards, Card(rank=-1), 2)
+                for p in three_same:
+                    for q in two_same:
+                        if next(iter(p)).rank != next(iter(q)).rank:
+                            result.append({*p, *q})
+            else:
+                # Straight
+                i = 0
+                while i < len(hand_cards) - 4:
+                    hand_cards[i].rank
+                    i += 1
         return result
 
 

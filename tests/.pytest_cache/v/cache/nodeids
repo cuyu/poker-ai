@@ -1,3 +1,9 @@
 [
-  "test_landlord_rule.py::test_single_card_in_desk"
+  "test_landlord_rule.py::test_single_card_in_desk",
+  "test_landlord_rule.py::test_two_same_card_in_desk",
+  "test_landlord_rule.py::test_three_same_card_in_desk",
+  "test_landlord_rule.py::test_three_same_card_and_one_single_card_in_desk",
+  "test_landlord_rule.py::test_four_same_card_aka_bomb_in_desk",
+  "test_landlord_rule.py::test_full_house_in_desk",
+  "test_landlord_rule.py::test_four_same_card_and_two_card_in_desk"
 ]

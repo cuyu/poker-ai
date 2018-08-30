@@ -29,15 +29,20 @@ class LandloardRule(BasicRule):
         """
         :param desk: a list of Card
         :param hand: a list of Card
-        :return: a list of list of Card
+        :return: a list of set of Card
         """
         result = []
         if len(desk_cards) == 1:
             for card in hand_cards:
                 if self.higher(card, desk_cards[0]):
-                    result.append(card)
+                    result.append({card})
         elif len(desk_cards) == 2:
-            assert desk_cards[0] == desk_cards[1]
+            assert desk_cards[0].rank == desk_cards[1].rank
+            for card in hand_cards:
+                if self.higher(card, desk_cards[0]):
+                    for card2 in hand_cards:
+                        if card2.rank == card.rank and card2 != card:
+                            result.append({card, card2})
 
         return result
 

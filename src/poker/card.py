@@ -13,6 +13,9 @@ class Card(object):
     def __eq__(self, other):
         return self.suit == other.suit and self.rank == other.rank
 
+    def __hash__(self):
+        return self.card_int
+
     @property
     def suit(self):
         suit_int = CardFactory.get_suit_int(self.card_int)

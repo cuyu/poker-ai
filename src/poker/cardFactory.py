@@ -65,6 +65,9 @@ class CardFactory(object):
 
         rank_char = string[0]
         suit_char = string[1]
+        if suit_char in {'u', 'v'}:
+            assert suit_char == rank_char.lower()
+            rank_char = '2'
         rank_int = CardFactory.CHAR_RANK_TO_INT_RANK[rank_char]
         suit_int = CardFactory.CHAR_SUIT_TO_INT_SUIT[suit_char]
         rank_prime = CardFactory.PRIMES[rank_int]

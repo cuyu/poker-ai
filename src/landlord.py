@@ -52,6 +52,8 @@ class LandloardRule(BasicRule):
                             for k in range(j + 1, len(hand_cards)):
                                 if hand_cards[k].rank == hand_cards[j].rank:
                                     result.append({hand_cards[i], hand_cards[j], hand_cards[k]})
+        elif len(desk_cards) == 4:
+            pass
 
         return result
 

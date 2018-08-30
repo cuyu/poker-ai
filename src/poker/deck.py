@@ -44,6 +44,6 @@ class Deck(object):
                 Deck._FULL_DECK.append(Card(rank + suit))
 
         if has_jokers:
-            Deck._FULL_DECK.append(Card('2u'))
-            Deck._FULL_DECK.append(Card('2v'))
+            Deck._FULL_DECK.append(Card('Uu'))
+            Deck._FULL_DECK.append(Card('Vv'))
         return list(Deck._FULL_DECK)

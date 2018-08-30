@@ -26,8 +26,8 @@ class CardFactory(object):
     """
 
     # the basics
-    STR_RANKS = '23456789TJQKAX'
-    INT_RANKS = range(14)
+    STR_RANKS = '23456789TJQKAXUV'
+    INT_RANKS = range(16)
     PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
 
     # converstion from string => int
@@ -67,10 +67,10 @@ class CardFactory(object):
         suit_char = string[1]
         if suit_char in {'u', 'v'}:
             assert suit_char == rank_char.lower()
-            rank_char = 'X'
+
         rank_int = CardFactory.CHAR_RANK_TO_INT_RANK[rank_char]
         suit_int = CardFactory.CHAR_SUIT_TO_INT_SUIT[suit_char]
-        rank_prime = CardFactory.PRIMES[rank_int] if rank_char != 'X' else CardFactory.PRIMES[0]
+        rank_prime = CardFactory.PRIMES[rank_int] if rank_char not in 'UV' else CardFactory.PRIMES[0]
 
         bitrank = 1 << rank_int << 16
         suit = suit_int << 10

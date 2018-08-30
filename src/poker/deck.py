@@ -39,7 +39,7 @@ class Deck(object):
             return list(Deck._FULL_DECK)
 
         # create the standard 52 card deck
-        for rank in CardFactory.STR_RANKS:
+        for rank in CardFactory.STR_RANKS[:13]:
             for suit in 'shdc':
                 Deck._FULL_DECK.append(Card(rank + suit))
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .poker.card import Card
+from src.poker.card import Card
 
 
 class BasicRule(object):
@@ -65,6 +65,7 @@ class LandlordRule(BasicRule):
         """
         result = []
         # Todo: add more kinds of desk cards
+        # Possibilities without straight
         assume_desk_cards = [
             [Card(rank=-1)],
             [Card(rank=-1), Card(rank=-1)],
@@ -72,10 +73,19 @@ class LandlordRule(BasicRule):
             [Card(rank=-1), Card(rank=-1), Card(rank=-1), Card(rank=-1)],
             [Card(rank=-1), Card(rank=-1), Card(rank=-1), Card(rank=-2)],
             [Card(rank=-1), Card(rank=-1), Card(rank=-1), Card(rank=-2), Card(rank=-2)],
-            [Card(rank=-1), Card(rank=-2), Card(rank=-3), Card(rank=-4), Card(rank=-5)],
         ]
         for desk_cards in assume_desk_cards:
             result += self.possibilities(desk_cards, hand_cards)
+
+        # Possibilities with straight
+        has_straight = True
+        length = 5
+        while has_straight and length <= len(hand_cards):
+            straight_result = self._possibilities_of_straight(hand_cards, Card(rank=-1), length=length)
+            if not straight_result:
+                break
+            result += straight_result
+            length += 1
 
         return result
 
@@ -122,15 +132,16 @@ class LandlordRule(BasicRule):
                 # Straight
                 result += self._possibilities_of_straight(hand_cards, desk_cards[0], length=5)
 
+        else:
+            result += self._possibilities_of_straight(hand_cards, desk_cards[0], length=len(desk_cards))
         return result
 
 
 if __name__ == '__main__':
-    from poker import Deck, Card
+    from src.poker import Deck, Card
 
     deck = Deck(has_jokers=True)
-    player1_hand = deck.draw(17)
-    for card in player1_hand:
-        print(card)
+    player1_hand = deck.draw(20)
+    p = LandlordRule().all_possibilities(player1_hand)
     player2_hand = deck.draw(17)
     player3_hand = deck.draw(17)

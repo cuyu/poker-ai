@@ -16,6 +16,9 @@ class Card(object):
     def __hash__(self):
         return self.card_int
 
+    def __lt__(self, other):
+        return self.rank < other.rank
+
     @property
     def suit(self):
         suit_int = CardFactory.get_suit_int(self.card_int)

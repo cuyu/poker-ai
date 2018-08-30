@@ -23,9 +23,10 @@ def test_three_same_card_in_desk():
 
 
 def test_three_same_card_and_one_single_card_in_desk():
-    desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('2s')]
-    hand = [Card('Ks'), Card('Kd'), Card('3c'), Card('Kc'), Card('Ad')]
-    assert {Card('Ks'), Card('Kd'), Card('Kc')} in LandloardRule().possibilities(desk, hand)
+    desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('As')]
+    hand = [Card('Ks'), Card('Kd'), Card('3c'), Card('Kc'), Card('2d')]
+    assert {Card('Ks'), Card('Kd'), Card('Kc'), Card('3c')} in LandloardRule().possibilities(desk, hand)
+    assert {Card('Ks'), Card('Kd'), Card('Kc'), Card('2d')} in LandloardRule().possibilities(desk, hand)
 
 
 def test_four_same_card_aka_bomb_in_desk():
@@ -36,5 +37,13 @@ def test_full_house_in_desk():
     pass
 
 
-def test_four_same_card_and_two_card_in_desk():
+def test_four_same_card_and_two_single_card_in_desk():
+    pass
+
+
+def test_five_card_straight_in_desk():
+    pass
+
+
+def test_three_pairs_in_desk():
     pass

@@ -25,6 +25,20 @@ class LandloardRule(BasicRule):
             else:
                 return card1.rank > card2.rank
 
+    def _possibilities_of_same_rank(self, hand_cards, target_card, same_number):
+        result = []
+        i = 0
+        while i < len(hand_cards) - (same_number - 1):
+            if self.higher(hand_cards[i], target_card):
+                if hand_cards[i].rank == hand_cards[i + same_number - 1].rank:
+                    result.append({*hand_cards[i:i + same_number]})
+                    i += same_number
+                else:
+                    i += 1
+            else:
+                i += 1
+        return result
+
     def possibilities(self, desk_cards, hand_cards):
         """
         :param desk: a list of Card
@@ -32,29 +46,27 @@ class LandloardRule(BasicRule):
         :return: a list of set of Card
         """
         result = []
+        hand_cards.sort()
         if len(desk_cards) == 1:
             for card in hand_cards:
                 if self.higher(card, desk_cards[0]):
                     result.append({card})
         elif len(desk_cards) == 2:
             assert desk_cards[0].rank == desk_cards[1].rank
-            for i in range(len(hand_cards)):
-                if self.higher(hand_cards[i], desk_cards[0]):
-                    for j in range(i + 1, len(hand_cards)):
-                        if hand_cards[i].rank == hand_cards[j].rank:
-                            result.append({hand_cards[i], hand_cards[j]})
+            result += self._possibilities_of_same_rank(hand_cards, desk_cards[0], 2)
         elif len(desk_cards) == 3:
             assert desk_cards[0].rank == desk_cards[1].rank == desk_cards[2].rank
-            for i in range(len(hand_cards)):
-                if self.higher(hand_cards[i], desk_cards[0]):
-                    for j in range(i + 1, len(hand_cards)):
-                        if hand_cards[i].rank == hand_cards[j].rank:
-                            for k in range(j + 1, len(hand_cards)):
-                                if hand_cards[k].rank == hand_cards[j].rank:
-                                    result.append({hand_cards[i], hand_cards[j], hand_cards[k]})
+            result += self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)
         elif len(desk_cards) == 4:
-            pass
-
+            if desk_cards[0].rank == desk_cards[1].rank == desk_cards[2].rank == desk_cards[3].rank:
+                result += self._possibilities_of_same_rank(hand_cards, desk_cards[0], 4)
+            else:
+                # Three same cards with one single card
+                three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)
+                for possibility in three_same:
+                    for card in hand_cards:
+                        if card not in possibility:
+                            result.append({*possibility, card})
         return result
 
 

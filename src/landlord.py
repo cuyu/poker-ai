@@ -152,7 +152,7 @@ class Game(object):
         self.history = []
         self.rule = LandlordRule()
 
-    def play(self):
+    def start(self):
         game_over = False
         player_turn = 0
         players = list(self.players.items())
@@ -182,6 +182,9 @@ class Game(object):
                 print("{}'s turn:".format(player_name), *[str(c) for c in choice])
             else:
                 print("{}'s turn:  Skip".format(player_name))
+        print("----------- final -----------")
+        for player_name, player in list(self.players.items()):
+            print("{}'s hand:".format(player_name), *[str(c) for c in player.cards])
 
 
 class Player(object):
@@ -215,5 +218,5 @@ class Player(object):
 
 if __name__ == '__main__':
     game1 = Game()
-    game1.play()
+    game1.start()
     game1.replay()

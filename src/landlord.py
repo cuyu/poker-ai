@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from src.poker.card import Card
+import random
+from collections import OrderedDict
+
+from src.poker import Deck, Card
 
 
 class BasicRule(object):
@@ -137,11 +140,63 @@ class LandlordRule(BasicRule):
         return result
 
 
-if __name__ == '__main__':
-    from src.poker import Deck, Card
+class Game(object):
+    def __init__(self):
+        self.deck = Deck(has_jokers=True)
+        self.players = OrderedDict({
+            'player1': Player(self.deck.draw(20)),
+            'player2': Player(self.deck.draw(17)),
+            'player3': Player(self.deck.draw(17)),
+        })
+        self.desk_pool = []
+        self.history = []
+        self.rule = LandlordRule()
 
-    deck = Deck(has_jokers=True)
-    player1_hand = deck.draw(20)
-    p = LandlordRule().all_possibilities(player1_hand)
-    player2_hand = deck.draw(17)
-    player3_hand = deck.draw(17)
+    def play(self):
+        game_over = False
+        turn = 0
+        players = list(self.players.items())
+        while not game_over:
+            player_name, player = players[turn % len(players)]
+            choice = player.show_card(self.desk_pool)
+            self.desk_pool = choice
+            self.history.append({player_name: choice})
+            turn += 1
+            if player.empty_hand():
+                print('{} is the winner!'.format(player_name))
+                game_over = True
+
+
+class Player(object):
+    def __init__(self, cards):
+        """
+        :param cards: A list of <Card> instance
+        """
+        self.cards = cards
+
+    def show_card(self, desk_cards):
+        """
+        Show card according to the cards in desk. Return [] means skip the step.
+        :param desk_cards: List of <Card>
+        :return: List of <Card>
+        """
+        if desk_cards:
+            options = LandlordRule().possibilities(desk_cards, self.cards)
+        else:
+            options = LandlordRule().all_possibilities(self.cards)
+        if options:
+            choice = random.choice(options)
+            for card in choice:
+                self.cards.remove(card)
+            return list(choice)
+        else:
+            return []
+
+    def empty_hand(self):
+        return len(self.cards) == 0
+
+
+if __name__ == '__main__':
+    game1 = Game()
+    game1.play()
+    print(game1.history)

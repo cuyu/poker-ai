@@ -132,7 +132,8 @@ class LandlordRule(BasicRule):
                 pass
             else:
                 # Three same cards with one single card
-                three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)
+                # Pick the second card as target card, as the type could be AAAB or ABBB
+                three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[1], 3)
                 for possibility in three_same:
                     for card in hand_cards:
                         if card not in possibility:
@@ -140,7 +141,8 @@ class LandlordRule(BasicRule):
         elif len(desk_cards) == 5:
             if desk_cards[0].rank == desk_cards[1].rank:
                 # Full house
-                three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)
+                # Pick the third card as target card, as the type could be AABBB or AAABB
+                three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[2], 3)
                 two_same = self._possibilities_of_same_rank(hand_cards, Card(rank=-1), 2)
                 for p in three_same:
                     for q in two_same:

@@ -31,7 +31,7 @@ def test_three_same_card_and_one_single_card_in_desk():
     assert {Card('Ks'), Card('Kd'), Card('Kc'), Card('2d')} in LandlordRule().possibilities(desk, hand)
     desk = [Card('7d'), Card('Kh'), Card('Kd'), Card('Ks')]
     hand = [Card('9s'), Card('Ad'), Card('9h'), Card('9c'), Card('Jd')]
-    assert {Card('9s'), Card('9c'), Card('9h'), Card('Jd')} in LandlordRule().possibilities(desk, hand)
+    assert [] == LandlordRule().possibilities(desk, hand)
 
 
 def test_four_same_card_aka_bomb_in_desk():
@@ -47,6 +47,9 @@ def test_full_house_in_desk():
     desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('Kd'), Card('Ks')]
     hand = [Card('As'), Card('Uu'), Card('5c'), Card('Ac'), Card('Ad'), Card('2h'), Card('5h')]
     assert {Card('As'), Card('Ac'), Card('Ad'), Card('5h'), Card('5c')} in LandlordRule().possibilities(desk, hand)
+    desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('Kd'), Card('Ks')]
+    hand = [Card('5s'), Card('Uu'), Card('5c'), Card('Ac'), Card('Ad'), Card('2h'), Card('5h')]
+    assert [] == LandlordRule().possibilities(desk, hand)
 
 
 def test_four_same_card_and_two_single_card_in_desk():

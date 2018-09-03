@@ -163,13 +163,15 @@ class Game(object):
                 self.desk_pool = []
             player_name, player = players[player_turn % len(players)]
             choice = player.show_card(self.desk_pool)
-            self.desk_pool = choice
-            self.history.append((player_name, choice,))
-            player_turn += 1
             if choice:
+                self.desk_pool = choice
                 continuous_no_choice = 0
             else:
                 continuous_no_choice += 1
+
+            self.history.append((player_name, choice,))
+            player_turn += 1
+
             if player.is_empty():
                 print('{} is the winner!'.format(player_name))
                 game_over = True

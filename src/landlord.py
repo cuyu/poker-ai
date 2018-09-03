@@ -151,6 +151,7 @@ class Game(object):
         self.desk_pool = []
         self.history = []
         self.rule = LandlordRule()
+        self._winner = None
 
     def start(self):
         game_over = False
@@ -173,8 +174,12 @@ class Game(object):
             player_turn += 1
 
             if player.is_empty():
-                print('{} is the winner!'.format(player_name))
+                self._winner = player_name
                 game_over = True
+
+    @property
+    def winner(self):
+        return self._winner
 
     def replay(self):
         for player_name, choice in self.history:

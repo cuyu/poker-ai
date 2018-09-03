@@ -24,6 +24,7 @@ def test_three_same_card_in_desk():
 
 
 def test_three_same_card_and_one_single_card_in_desk():
+    # todo: can the single card be joker?
     desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('As')]
     hand = [Card('Ks'), Card('Kd'), Card('3c'), Card('Kc'), Card('2d')]
     assert {Card('Ks'), Card('Kd'), Card('Kc'), Card('3c')} in LandlordRule().possibilities(desk, hand)
@@ -37,6 +38,9 @@ def test_four_same_card_aka_bomb_in_desk():
     desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('Jd')]
     hand = [Card('2s'), Card('Uu'), Card('5c'), Card('2c'), Card('2d'), Card('2h')]
     assert {Card('2s'), Card('2c'), Card('2d'), Card('2h')} in LandlordRule().possibilities(desk, hand)
+    desk = [Card('Js'), Card('Jh'), Card('Jc'), Card('Jd')]
+    hand = [Card('2s'), Card('Uu'), Card('5c'), Card('Ac'), Card('2d'), Card('2h')]
+    assert [] == LandlordRule().possibilities(desk, hand)
 
 
 def test_full_house_in_desk():
@@ -64,11 +68,15 @@ def test_three_pairs_in_desk():
 
 
 def test_four_same_card_in_hand():
-    pass
+    desk = [Card('As'), Card('Ah'), Card('Ac'), Card('2d'), Card('2c')]
+    hand = [Card('9d'), Card('9h'), Card('9c'), Card('Uu'), Card('Ad'), Card('9s'), Card('2h')]
+    assert [{Card('9d'), Card('9h'), Card('9c'), Card('9s')}] == LandlordRule().possibilities(desk, hand)
 
 
 def test_super_bomb_in_hand():
-    pass
+    desk = [Card('As'), Card('Ah'), Card('Ac'), Card('Ad')]
+    hand = [Card('Vv'), Card('Tc'), Card('9c'), Card('Uu'), Card('Ad'), Card('Kh'), Card('2h')]
+    assert [{Card('Vv'), Card('Uu')}] == LandlordRule().possibilities(desk, hand)
 
 
 def test_all_possibilities():

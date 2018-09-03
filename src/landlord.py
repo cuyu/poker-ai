@@ -60,6 +60,17 @@ class LandlordRule(BasicRule):
 
         return result
 
+    def _possibilities_of_bomb(self, hand_cards, target_cards):
+        result = []
+        if len(target_cards) == 4 and target_cards[0].rank == target_cards[1].rank == target_cards[2].rank == \
+                target_cards[3].rank:
+            result += self._possibilities_of_same_rank(hand_cards, target_cards[0], 4)
+        else:
+            result += self._possibilities_of_same_rank(hand_cards, Card(rank=-1), 4)
+        if Card('Uu') in hand_cards and Card('Vv') in hand_cards:
+            result.append({Card('Uu'), Card('Vv')})
+        return result
+
     def all_possibilities(self, hand_cards):
         """
         List all the possibilities according the cards in hands (assuming the desk is empty).
@@ -99,9 +110,12 @@ class LandlordRule(BasicRule):
         :param hand: a list of Card
         :return: a list of set of Card
         """
-        result = []
         desk_cards.sort()
         hand_cards.sort()
+        # No one is higher than the super bomb
+        if Card('Vv') in desk_cards and Card('Uu') in desk_cards:
+            return []
+        result = self._possibilities_of_bomb(hand_cards, desk_cards)
         if len(desk_cards) == 1:
             for card in hand_cards:
                 if self.higher(card, desk_cards[0]):
@@ -114,7 +128,8 @@ class LandlordRule(BasicRule):
             result += self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)
         elif len(desk_cards) == 4:
             if desk_cards[0].rank == desk_cards[1].rank == desk_cards[2].rank == desk_cards[3].rank:
-                result += self._possibilities_of_same_rank(hand_cards, desk_cards[0], 4)
+                # This is a bomb, we have got all the possible bombs, so we just do nothing here
+                pass
             else:
                 # Three same cards with one single card
                 three_same = self._possibilities_of_same_rank(hand_cards, desk_cards[0], 3)

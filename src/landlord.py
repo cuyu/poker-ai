@@ -154,17 +154,32 @@ class Game(object):
 
     def play(self):
         game_over = False
-        turn = 0
+        player_turn = 0
         players = list(self.players.items())
+        continuous_no_choice = 0
         while not game_over:
-            player_name, player = players[turn % len(players)]
+            if continuous_no_choice == len(players) - 1:
+                # If the other player have no choice, then the player can play any cards
+                self.desk_pool = []
+            player_name, player = players[player_turn % len(players)]
             choice = player.show_card(self.desk_pool)
             self.desk_pool = choice
-            self.history.append({player_name: choice})
-            turn += 1
-            if player.empty_hand():
+            self.history.append((player_name, choice,))
+            player_turn += 1
+            if choice:
+                continuous_no_choice = 0
+            else:
+                continuous_no_choice += 1
+            if player.is_empty():
                 print('{} is the winner!'.format(player_name))
                 game_over = True
+
+    def replay(self):
+        for player_name, choice in self.history:
+            if choice:
+                print("{}'s turn:".format(player_name), *[str(c) for c in choice])
+            else:
+                print("{}'s turn:  Skip".format(player_name))
 
 
 class Player(object):
@@ -192,11 +207,11 @@ class Player(object):
         else:
             return []
 
-    def empty_hand(self):
+    def is_empty(self):
         return len(self.cards) == 0
 
 
 if __name__ == '__main__':
     game1 = Game()
     game1.play()
-    print(game1.history)
+    game1.replay()

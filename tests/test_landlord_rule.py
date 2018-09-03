@@ -7,6 +7,7 @@ from src.poker import Card
 def test_single_card_in_desk():
     assert LandlordRule().possibilities([Card('Uu')], [Card('Vv'), Card('5c')]) == [{Card('Vv')}]
     assert LandlordRule().possibilities([Card('Ks')], [Card('2h'), Card('5c')]) == [{Card('2h')}]
+    assert LandlordRule().possibilities([Card('2s')], [Card('2h'), Card('5c')]) == []
     assert LandlordRule().possibilities([Card('Ks')], [Card('Jh'), Card('5c')]) == []
 
 

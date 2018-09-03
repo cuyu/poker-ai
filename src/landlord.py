@@ -22,7 +22,7 @@ class LandlordRule(BasicRule):
             return card1.suit > card2.suit
         else:
             # 2 is higher than A
-            if card1.rank == 0:
+            if card1.rank == 0 and card2.rank != 0:
                 return True
             elif card2.rank == 0:
                 return False

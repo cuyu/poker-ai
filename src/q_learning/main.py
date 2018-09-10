@@ -8,20 +8,21 @@ from src.rule.landlord import Game, Player, AIPlayer
 
 def train():
     ai_player = AIPlayer([Card('2s'), Card('3d'), Card('3h'), Card('3c')])
-    players = OrderedDict({
-        'player1': ai_player,
-        'player2': Player([Card('As'), Card('2d'), Card('5h')]),
-        'player3': Player([Card('Ks'), Card('6d'), Card('6h')]),
-    })
     RL = QLearningTable(actions=ai_player.possibilities([]))
     for episode in range(100):
         # initial observation
+        ai_player = AIPlayer([Card('2s'), Card('3d'), Card('3h'), Card('3c')])
+        players = OrderedDict({
+            'player1': ai_player,
+            'player2': Player([Card('As'), Card('2d'), Card('5h')]),
+            'player3': Player([Card('Ks'), Card('6d'), Card('6h')]),
+        })
         observation = Game(players)
 
         # RL choose action based on game history and cards on desk
-        action = RL.choose_action(observation)
+        action = RL.choose_action(observation, ai_player)
 
-        game_progress = observation.start(step_by_step=True)
+        game_progress = observation.start_by_step()
         previous_state = observation.state
 
         for player_name, choice in game_progress:
@@ -33,7 +34,7 @@ def train():
                 else:
                     reward = -1
             # RL choose action based on next observation
-            action_ = RL.choose_action(observation)
+            action_ = RL.choose_action(observation, ai_player)
 
             # RL learn from this transition (s, a, r, s, a) ==> Sarsa
             RL.learn(previous_state, action, reward, observation.state, action_)
@@ -41,6 +42,8 @@ def train():
             # swap observation and action
             previous_state = observation.state
             action = action_
+
+        observation.replay()
 
     # end of game
     print('game over')

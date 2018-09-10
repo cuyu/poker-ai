@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import random
+
 import numpy as np
 import pandas as pd
+
+from src.poker import Card
+
+
+def cards_string(cards):
+    return ','.join([c.card_string for c in cards])
 
 
 class RL(object):
     def __init__(self, action_space, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9):
-        self.actions = action_space  # a list
+        self.actions = [cards_string(cards) for cards in action_space] + ['']  # a list
         self.lr = learning_rate
         self.gamma = reward_decay
         self.epsilon = e_greedy
@@ -18,23 +26,40 @@ class RL(object):
             # append new state to q table
             self.q_table = self.q_table.append(
                 pd.Series(
-                    [0]*len(self.actions),
+                    [0] * len(self.actions),
                     index=self.q_table.columns,
                     name=state,
                 )
             )
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, ai_player):
         self.check_state_exist(observation.state)
+        # possible actions
+        possible_actions = ai_player.possibilities(observation.desk_pool)
+        possible_actions_string = [cards_string(c) for c in possible_actions]
         # action selection
         if np.random.rand() < self.epsilon:
             # choose best action
-            state_action = self.q_table.loc[observation, :]
+            state_action = self.q_table.loc[observation.state, :]
             # some actions may have the same value, randomly choose on in these actions
-            action = np.random.choice(state_action[state_action == np.max(state_action)].index)
+            # if no available actions, then pick the second highest values and so on..
+            state_values = list(set(state_action.values))
+            state_values.sort(reverse=True)
+            for value in state_values:
+                available_actions = list(set((state_action[state_action == value].index)).intersection(
+                    set(possible_actions_string)))
+                if available_actions:
+                    action = random.choice(available_actions)
+                    break
+            else:
+                action = ''
         else:
             # choose random action
-            action = np.random.choice(self.actions)
+            if possible_actions_string:
+                action = random.choice(possible_actions_string)
+            else:
+                action = ''
+        ai_player.choose_next_action(action)
         return action
 
     def learn(self, *args):
@@ -52,10 +77,11 @@ class QLearningTable(RL):
         """
         super(QLearningTable, self).__init__(actions, learning_rate, reward_decay, e_greedy)
 
-    def learn(self, s, a, r, s_):
+    def learn(self, s, a, r, s_, a_):
         self.check_state_exist(s_)
         q_predict = self.q_table.loc[s, a]
-        if s_ != 'terminal':
+        # if s_ != 'terminal':
+        if r == 0:
             q_target = r + self.gamma * self.q_table.loc[s_, :].max()  # next state is not terminal
         else:
             q_target = r  # next state is terminal

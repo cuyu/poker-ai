@@ -189,12 +189,13 @@ class Game(object):
                 continuous_no_choice += 1
 
             self.history.append((player_name, choice,))
-            yield (player_name, choice,)
             player_turn += 1
 
             if player.is_empty():
                 self._winner = player_name
                 game_over = True
+
+            yield (player_name, choice,)
 
     def start(self):
         steps = self.start_by_step()
@@ -213,12 +214,12 @@ class Game(object):
         :return:
         """
         state = ''
-        for c in self.desk_pool:
-            state += str(c)
+        for c in sorted(self.desk_pool):
+            state += c.card_string
         for player_name, cards in self.history:
             state += player_name
-            for c in cards:
-                state += str(c)
+            for c in sorted(cards):
+                state += c.card_string
         return state
 
     def replay(self):
@@ -230,6 +231,7 @@ class Game(object):
         print("----------- final -----------")
         for player_name, player in list(self.players.items()):
             print("{}'s hand:".format(player_name), *[str(c) for c in player.cards])
+        print("$$$$$$ {} is the winner $$$$$$".format(self.winner))
 
 
 class WholeGame(Game):
@@ -249,6 +251,7 @@ class Player(object):
         :param cards: A list of <Card> instance
         """
         self.cards = cards
+        self.cards.sort()
 
     def show_card(self, desk_cards):
         """
@@ -290,12 +293,14 @@ class AIPlayer(Player):
     def choose_next_action(self, cards):
         """
         Used by reinforcement learning
-        :param cards: list of <Card>
+        :param cards: a string represent a list of Card
         """
-        self._next_action = cards
+        cards_string = cards.split(',')
+        _cards = [c for c in self.cards if c.card_string in cards_string]
+        self._next_action = _cards
 
     def show_card(self, desk_cards):
-        assert self._next_action
+        assert self._next_action is not None
         for card in self._next_action:
             self.cards.remove(card)
         return self._next_action

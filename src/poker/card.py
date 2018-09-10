@@ -9,6 +9,7 @@ class Card(object):
         Do not use suit and rank to init unless in card rule class, as by this method, we can get some
         impossible card like rank=-1.
         """
+        self.card_string = card_string
         self.card_int = CardFactory.new(card_string) if card_string else 0
         self._suit = suit
         self._rank = rank

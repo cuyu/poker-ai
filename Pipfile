@@ -8,6 +8,8 @@ name = "pypi"
 [packages]
 
 termcolor = "*"
+numpy = "*"
+pandas = "*"
 
 
 [dev-packages]

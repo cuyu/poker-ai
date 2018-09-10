@@ -23,7 +23,10 @@ class Card(object):
         return self.card_int
 
     def __lt__(self, other):
-        return self.rank < other.rank
+        if self.rank == other.rank:
+            return self.suit < other.suit
+        else:
+            return self.rank < other.rank
 
     @property
     def suit(self):

@@ -158,19 +158,20 @@ class LandlordRule(BasicRule):
 
 
 class Game(object):
-    def __init__(self):
-        self.deck = Deck(has_jokers=True)
-        self.players = OrderedDict({
-            'player1': Player(self.deck.draw(20)),
-            'player2': Player(self.deck.draw(17)),
-            'player3': Player(self.deck.draw(17)),
-        })
+    def __init__(self, players):
+        """
+        :param players: a OrderedDict, keys are player's names, values are <Player> instance
+        """
+        self.players = players
         self.desk_pool = []
         self.history = []
         self.rule = LandlordRule()
         self._winner = None
 
-    def start(self):
+    def start_by_step(self):
+        """
+        :return: a generator with player_name and choice of that step
+        """
         game_over = False
         player_turn = 0
         players = list(self.players.items())
@@ -188,15 +189,37 @@ class Game(object):
                 continuous_no_choice += 1
 
             self.history.append((player_name, choice,))
+            yield (player_name, choice,)
             player_turn += 1
 
             if player.is_empty():
                 self._winner = player_name
                 game_over = True
 
+    def start(self):
+        steps = self.start_by_step()
+        for player_name, choice in steps:
+            pass  # Do nothing
+
     @property
     def winner(self):
         return self._winner
+
+    @property
+    def state(self):
+        """
+        Used by reinforcement learning
+        The state should include all the history of the game and cards in desk
+        :return:
+        """
+        state = ''
+        for c in self.desk_pool:
+            state += str(c)
+        for player_name, cards in self.history:
+            state += player_name
+            for c in cards:
+                state += str(c)
+        return state
 
     def replay(self):
         for player_name, choice in self.history:
@@ -207,6 +230,17 @@ class Game(object):
         print("----------- final -----------")
         for player_name, player in list(self.players.items()):
             print("{}'s hand:".format(player_name), *[str(c) for c in player.cards])
+
+
+class WholeGame(Game):
+    def __init__(self):
+        self.deck = Deck(has_jokers=True)
+        players = OrderedDict({
+            'player1': Player(self.deck.draw(20)),
+            'player2': Player(self.deck.draw(17)),
+            'player3': Player(self.deck.draw(17)),
+        })
+        super(WholeGame, self).__init__(players)
 
 
 class Player(object):
@@ -238,7 +272,36 @@ class Player(object):
         return len(self.cards) == 0
 
 
+class AIPlayer(Player):
+    def __init__(self, cards):
+        super(AIPlayer, self).__init__(cards)
+        self._next_action = None
+
+    def possibilities(self, desk_cards):
+        """
+        Used by reinforcement learning
+        """
+        if desk_cards:
+            options = LandlordRule().possibilities(desk_cards, self.cards)
+        else:
+            options = LandlordRule().all_possibilities(self.cards)
+        return options
+
+    def choose_next_action(self, cards):
+        """
+        Used by reinforcement learning
+        :param cards: list of <Card>
+        """
+        self._next_action = cards
+
+    def show_card(self, desk_cards):
+        assert self._next_action
+        for card in self._next_action:
+            self.cards.remove(card)
+        return self._next_action
+
+
 if __name__ == '__main__':
-    game1 = Game()
+    game1 = WholeGame()
     game1.start()
     game1.replay()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from src.landlord import LandlordRule
+from src.rule.landlord import LandlordRule
 from src.poker import Card
 
 

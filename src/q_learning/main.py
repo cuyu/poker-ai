@@ -6,7 +6,7 @@ from src.q_learning.brain import QLearningTable
 from src.rule.landlord import Game, Player, AIPlayer
 
 
-def train(players, desk_pool, rounds=100):
+def train(players, desk_pool, rounds=100, replay_game=True):
     """
     :param players: A OrderedDict of players, the first player should be <AIPlayer>
     :param desk_pool: A list of <Card>
@@ -16,6 +16,8 @@ def train(players, desk_pool, rounds=100):
         ai_name = p
         break
     RL = QLearningTable(actions=players[ai_name].possibilities([]))
+    ai_win = 0
+    win_rate_frequency = 100
     for episode in range(rounds):
         # initial observation
         _players = {}
@@ -37,7 +39,7 @@ def train(players, desk_pool, rounds=100):
             if observation.winner is None:
                 reward = 0
             else:
-                if observation.winner == 'player1':
+                if observation.winner == ai_name:
                     reward = 1
                 else:
                     reward = -1
@@ -51,7 +53,16 @@ def train(players, desk_pool, rounds=100):
             previous_state = observation.state
             action = action_
 
-        observation.replay()
+        if replay_game:
+            observation.replay()
+
+        if observation.winner == ai_name:
+            ai_win += 1
+
+        if episode > 0 and (episode + 1) % win_rate_frequency == 0:
+            print('AI win rate for last {0} rounds: {1}'.format(win_rate_frequency,
+                                                                float(ai_win) / float(win_rate_frequency)))
+            ai_win = 0
 
     # end of game
     print('game over')
@@ -71,4 +82,4 @@ if __name__ == "__main__":
         'p1': AIPlayer([Card(s) for s in p1.split(',')]),
         'p2': Player([Card(s) for s in p2.split(',')]),
         'p3': Player([Card(s) for s in p3.split(',')]),
-    }), desk_pool=[], rounds=1000)
+    }), desk_pool=[], rounds=5500, replay_game=False)

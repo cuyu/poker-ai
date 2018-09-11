@@ -6,17 +6,25 @@ from src.q_learning.brain import QLearningTable
 from src.rule.landlord import Game, Player, AIPlayer
 
 
-def train():
-    RL = QLearningTable(actions=AIPlayer([Card('2s'), Card('3d'), Card('3h'), Card('3c'), Card('4d')]).possibilities([]))
-    for episode in range(100):
+def train(players, rounds=100):
+    """
+    :param players: A OrderedDict of players, the first player should be <AIPlayer>
+    :param rounds: How many rounds of games for training
+    """
+    for p in players:
+        ai_name = p
+        break
+    RL = QLearningTable(actions=players[ai_name].possibilities([]))
+    for episode in range(rounds):
         # initial observation
-        ai_player = AIPlayer([Card('2s'), Card('3d'), Card('3h'), Card('3c'), Card('4d')])
-        players = OrderedDict({
-            'player1': ai_player,
-            'player2': Player([Card('As'), Card('2d'), Card('5h')]),
-            'player3': Player([Card('Ks'), Card('6d'), Card('6h'), Card('6s')]),
-        })
-        observation = Game(players)
+        _players = {}
+        for name in players:
+            if name == ai_name:
+                _players[name] = AIPlayer(players[name].cards)
+            else:
+                _players[name] = Player(players[name].cards)
+        ai_player = _players[ai_name]
+        observation = Game(OrderedDict(_players))
 
         # RL choose action based on game history and cards on desk
         action = RL.choose_action(observation, ai_player)
@@ -49,4 +57,9 @@ def train():
 
 
 if __name__ == "__main__":
-    train()
+    players = OrderedDict({
+        'player1': AIPlayer([Card('2s'), Card('3d'), Card('3h'), Card('3c'), Card('4d')]),
+        'player2': Player([Card('As'), Card('2d'), Card('5h')]),
+        'player3': Player([Card('Ks'), Card('6d'), Card('6h'), Card('6s')]),
+    })
+    train(players)

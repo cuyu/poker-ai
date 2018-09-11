@@ -6,9 +6,10 @@ from src.q_learning.brain import QLearningTable
 from src.rule.landlord import Game, Player, AIPlayer
 
 
-def train(players, rounds=100):
+def train(players, desk_pool, rounds=100):
     """
     :param players: A OrderedDict of players, the first player should be <AIPlayer>
+    :param desk_pool: A list of <Card>
     :param rounds: How many rounds of games for training
     """
     for p in players:
@@ -24,7 +25,7 @@ def train(players, rounds=100):
             else:
                 _players[name] = Player(players[name].cards)
         ai_player = _players[ai_name]
-        observation = Game(OrderedDict(_players))
+        observation = Game(OrderedDict(_players), desk_pool=desk_pool)
 
         # RL choose action based on game history and cards on desk
         action = RL.choose_action(observation, ai_player)
@@ -62,4 +63,4 @@ if __name__ == "__main__":
         'player2': Player([Card('As'), Card('2d'), Card('5h')]),
         'player3': Player([Card('Ks'), Card('6d'), Card('6h'), Card('6s')]),
     })
-    train(players)
+    train(players, desk_pool=[])

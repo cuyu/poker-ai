@@ -11,7 +11,7 @@ def test_simple_game():
         'player1': Player([Card('4d'), Card('5c'), Card('5s'), Card('Ah')]),
         'player2': Player([Card('2h'), Card('2d')]),
         'player3': Player([Card('9d')]),
-    }))
+    }), desk_pool=[])
     game.start()
     assert game.winner == 'player2'
 
@@ -21,7 +21,7 @@ def test_only_straight_win():
         'player1': Player([Card('4d'), Card('5c'), Card('6s'), Card('7h'), Card('8d')]),
         'player2': Player([Card('2h'), Card('2d')]),
         'player3': Player([Card('9d')]),
-    }))
+    }), desk_pool=[])
     game.start()
     if game.winner == 'player1':
         # The winning way is the straight

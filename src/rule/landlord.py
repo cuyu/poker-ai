@@ -158,12 +158,13 @@ class LandlordRule(BasicRule):
 
 
 class Game(object):
-    def __init__(self, players):
+    def __init__(self, players, desk_pool):
         """
         :param players: a OrderedDict, keys are player's names, values are <Player> instance
+        :param desk_pool: a list of <Card> instance
         """
         self.players = players
-        self.desk_pool = []
+        self.desk_pool = desk_pool
         self.history = []
         self.rule = LandlordRule()
         self._winner = None
@@ -245,7 +246,7 @@ class WholeGame(Game):
             'player2': Player(self.deck.draw(17)),
             'player3': Player(self.deck.draw(17)),
         })
-        super(WholeGame, self).__init__(players)
+        super(WholeGame, self).__init__(players, desk_pool=[])
 
 
 class Player(object):

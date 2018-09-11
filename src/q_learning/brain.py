@@ -9,12 +9,13 @@ from src.poker import Card
 
 
 def cards_string(cards):
-    return ','.join([c.card_string for c in cards])
+    return ','.join([str(c.rank) for c in cards])
 
 
 class RL(object):
     def __init__(self, action_space, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9):
         self.actions = [cards_string(cards) for cards in action_space] + ['']  # a list
+        self.actions = list(set(self.actions))
         self.lr = learning_rate
         self.gamma = reward_decay
         self.epsilon = e_greedy

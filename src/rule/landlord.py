@@ -177,9 +177,6 @@ class Game(object):
         players = list(self.players.items())
         continuous_no_choice = 0
         while not game_over:
-            if continuous_no_choice == len(players) - 1:
-                # If the other player have no choice, then the player can play any cards
-                self.desk_pool = []
             player_name, player = players[player_turn % len(players)]
             choice = player.show_card(self.desk_pool)
             if choice:
@@ -194,6 +191,10 @@ class Game(object):
             if player.is_empty():
                 self._winner = player_name
                 game_over = True
+
+            if continuous_no_choice == len(players) - 1:
+                # If the other player have no choice, then the player can play any cards
+                self.desk_pool = []
 
             yield (player_name, choice,)
 
@@ -215,11 +216,13 @@ class Game(object):
         """
         state = ''
         for c in sorted(self.desk_pool):
-            state += c.card_string
+            state += str(c.rank)
+        state += '|'
         for player_name, cards in self.history:
             state += player_name
+            state += '>'
             for c in sorted(cards):
-                state += c.card_string
+                state += str(c.rank)
         return state
 
     def replay(self):
@@ -295,8 +298,11 @@ class AIPlayer(Player):
         Used by reinforcement learning
         :param cards: a string represent a list of Card
         """
-        cards_string = cards.split(',')
-        _cards = [c for c in self.cards if c.card_string in cards_string]
+        if cards:
+            cards_rank = [int(i) for i in cards.split(',')]
+            _cards = [c for c in self.cards if c.rank in cards_rank]
+        else:
+            _cards = []
         self._next_action = _cards
 
     def show_card(self, desk_cards):

@@ -28,3 +28,13 @@ def test_only_straight_win():
         assert len(game.history[0][1]) == 5
     else:
         assert game.winner == 'player2'
+
+
+def test_player_should_skip():
+    game = Game(OrderedDict({
+        'player1': Player([Card('4d')]),
+        'player2': Player([Card('2h')]),
+        'player3': Player([Card('9d')]),
+    }), desk_pool=[Card('9s'), Card('Kc'), Card('Ks'), Card('Kh')])
+    game.start()
+    assert game.winner == 'player3'

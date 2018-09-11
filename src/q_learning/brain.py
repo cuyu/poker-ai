@@ -38,6 +38,8 @@ class RL(object):
         # possible actions
         possible_actions = ai_player.possibilities(observation.desk_pool)
         possible_actions_string = [cards_string(c) for c in possible_actions]
+        # withdraw is always an option
+        possible_actions_string.append('')
         # action selection
         if np.random.rand() < self.epsilon:
             # choose best action

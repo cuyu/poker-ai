@@ -301,7 +301,12 @@ class AIPlayer(Player):
         """
         if cards:
             cards_rank = [int(i) for i in cards.split(',')]
-            _cards = [c for c in self.cards if c.rank in cards_rank]
+            _cards = []
+            for r in cards_rank:
+                for c in self.cards:
+                    if c.rank == r and c not in _cards:
+                        _cards.append(c)
+                        break
         else:
             _cards = []
         self._next_action = _cards

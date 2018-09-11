@@ -1,6 +1,7 @@
 [
   "test_landlord_game.py::test_simple_game",
   "test_landlord_game.py::test_only_straight_win",
+  "test_landlord_game.py::test_player_should_skip",
   "test_landlord_rule.py::test_single_card_in_desk",
   "test_landlord_rule.py::test_two_same_card_in_desk",
   "test_landlord_rule.py::test_three_same_card_in_desk",

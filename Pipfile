@@ -10,6 +10,7 @@ name = "pypi"
 termcolor = "*"
 numpy = "*"
 pandas = "*"
+tensorflow = "*"
 
 
 [dev-packages]

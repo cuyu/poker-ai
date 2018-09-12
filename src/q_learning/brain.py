@@ -5,8 +5,6 @@ import random
 import numpy as np
 import pandas as pd
 
-from src.poker import Card
-
 
 def cards_string(cards):
     return ','.join([str(c.rank) for c in cards])
@@ -14,6 +12,12 @@ def cards_string(cards):
 
 class RL(object):
     def __init__(self, action_space, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9):
+        """
+        :param action_space: A list of actions, used to init the q table
+        :param learning_rate: the higher, the quicker training process will be, but too higher could lead some problems
+        :param reward_decay:the percentage that the q values of current state will influence previous state's q values
+        :param e_greedy: percentage of using the greedy way (i.e. using the q table) to make choice of actions
+        """
         self.actions = [cards_string(cards) for cards in action_space] + ['']  # a list
         self.actions = list(set(self.actions))
         self.lr = learning_rate

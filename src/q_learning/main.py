@@ -12,9 +12,8 @@ def train(players, desk_pool, rounds=100, replay_game=True):
     :param desk_pool: A list of <Card>
     :param rounds: How many rounds of games for training
     """
-    for p in players:
-        ai_name = p
-        break
+    ai_name = list(players.keys())[0]
+    last_player_name = list(players.keys())[-1]
     RL = QLearningTable(actions=players[ai_name].possibilities([]))
     ai_win = 0
     win_rate_frequency = 100
@@ -43,15 +42,19 @@ def train(players, desk_pool, rounds=100, replay_game=True):
                     reward = 1
                 else:
                     reward = -1
-            # RL choose action based on next observation
-            action_ = RL.choose_action(observation, ai_player)
 
-            # RL learn from this transition (s, a, r, s, a) ==> Sarsa
-            RL.learn(previous_state, action, reward, observation.state, action_)
+            if player_name == last_player_name and observation.winner is None:
+                # RL choose action based on next observation
+                action_ = RL.choose_action(observation, ai_player)
 
-            # swap observation and action
-            previous_state = observation.state
-            action = action_
+                # RL learn from this transition (s, a, r, s, a) ==> Sarsa
+                RL.learn(previous_state, action, reward, observation.state)
+
+                # swap observation and action
+                previous_state = observation.state
+                action = action_
+            elif observation.winner is not None:
+                RL.learn(previous_state, action, reward, observation.state)
 
         if replay_game:
             observation.replay()
@@ -82,4 +85,4 @@ if __name__ == "__main__":
         'p1': AIPlayer([Card(s) for s in p1.split(',')]),
         'p2': Player([Card(s) for s in p2.split(',')]),
         'p3': Player([Card(s) for s in p3.split(',')]),
-    }), desk_pool=[], rounds=5500, replay_game=False)
+    }), desk_pool=[], rounds=500, replay_game=True)

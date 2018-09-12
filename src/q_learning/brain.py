@@ -80,7 +80,7 @@ class QLearningTable(RL):
         """
         super(QLearningTable, self).__init__(actions, learning_rate, reward_decay, e_greedy)
 
-    def learn(self, s, a, r, s_, a_):
+    def learn(self, s, a, r, s_):
         self.check_state_exist(s_)
         q_predict = self.q_table.loc[s, a]
         # if s_ != 'terminal':

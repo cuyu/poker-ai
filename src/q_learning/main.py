@@ -73,7 +73,7 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
 
 
 if __name__ == "__main__":
-    scenario = 3
+    scenario = 2
 
     if scenario == 1:
         players = OrderedDict({
@@ -90,4 +90,4 @@ if __name__ == "__main__":
             'p1': AIPlayer([Card(s) for s in p1.split(',')]),
             'p2': Player([Card(s) for s in p2.split(',')]),
             'p3': Player([Card(s) for s in p3.split(',')]),
-        }), desk_pool=[], rounds=1000, win_rate_frequency=50, replay_game=False)
+        }), desk_pool=[], rounds=300, win_rate_frequency=10, replay_game=False)

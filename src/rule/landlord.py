@@ -164,6 +164,8 @@ class Game(object):
         :param desk_pool: a list of <Card> instance
         """
         self.players = players
+        names = list(self.players.keys())
+        self._player_index = {names[idx]: idx for idx in range(len(names))}
         self.desk_pool = desk_pool
         self.history = []
         self.rule = LandlordRule()
@@ -211,19 +213,19 @@ class Game(object):
     @property
     def state(self):
         """
-        Used by reinforcement learning
-        The state should include all the history of the game and cards in desk
-        :return:
+        The state of the game, used by reinforcement learning
+        The state here only include the history of the game (the history include the history of current cards in desk).
+
+        To make the state friendly to neural network, we will add the player info into card rank, so that the total
+        dimension of state will be limited to a fixed value. For example, if player 1 played two cards with rank 6, then
+        in state, it will shows [4, 4], if player 2 played that in history, it will be [24, 24], for player 3,
+        it will be [44, 44].
+        The final state format for specific player should be [cards in hand, history].
         """
         state = ''
-        for c in sorted(self.desk_pool):
-            state += str(c.rank)
-        state += '|'
         for player_name, cards in self.history:
-            state += player_name
-            state += '>'
             for c in sorted(cards):
-                state += str(c.rank)
+                state += str(c.rank + self._player_index[player_name] * 20)
         return state
 
     def replay(self):

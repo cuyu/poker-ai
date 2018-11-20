@@ -7,8 +7,16 @@ np.random.seed(1)
 tf.set_random_seed(1)
 
 
+def add_to_enough_length(li, final_length, add_value):
+    result = np.zeros(final_length) + add_value
+    for i in range(len(li)):
+        result[i] = li[i]
+
+    return result
+
+
 # Deep Q Network off-policy
-class DeepQNetwork:
+class DeepQNetwork(object):
     def __init__(
             self,
             n_actions,
@@ -83,7 +91,7 @@ class DeepQNetwork:
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
         # ------------------ build target_net ------------------
-        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
+        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')  # input
         with tf.variable_scope('target_net'):
             # c_names(collections_names) are the collections to store variables
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
@@ -112,13 +120,15 @@ class DeepQNetwork:
 
         self.memory_counter += 1
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, ai_player):
         # to have batch dimension when feed into tf placeholder
-        observation = observation[np.newaxis, :]
+        state = add_to_enough_length([c.rank for c in ai_player.cards], 20, -1) + add_to_enough_length(
+            observation.state, 54, -1)
 
         if np.random.uniform() < self.epsilon:
             # forward feed the observation and get q value for every actions
-            actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
+            actions_value = self.sess.run(self.q_eval, feed_dict={self.s: state})
+            # todo: only pick possibilities
             action = np.argmax(actions_value)
         else:
             action = np.random.randint(0, self.n_actions)

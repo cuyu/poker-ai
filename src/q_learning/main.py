@@ -33,7 +33,7 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
         action = RL.choose_action(observation, ai_player)
 
         game_progress = observation.start_by_step()
-        previous_state = observation.state
+        previous_state = str(observation.state)
 
         for player_name, choice in game_progress:
             if observation.winner is None:
@@ -49,13 +49,13 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
                 action_ = RL.choose_action(observation, ai_player)
 
                 # RL learn from this transition (s, a, r, s, a) ==> Sarsa
-                RL.learn(previous_state, action, reward, observation.state)
+                RL.learn(previous_state, action, reward, str(observation.state))
 
                 # swap observation and action
-                previous_state = observation.state
+                previous_state = str(observation.state)
                 action = action_
             elif observation.winner is not None:
-                RL.learn(previous_state, action, reward, observation.state)
+                RL.learn(previous_state, action, reward, str(observation.state))
 
         if replay_game:
             observation.replay()

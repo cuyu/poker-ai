@@ -222,10 +222,10 @@ class Game(object):
         it will be [44, 44].
         The final state format for specific player should be [cards in hand, history].
         """
-        state = ''
+        state = []
         for player_name, cards in self.history:
             for c in sorted(cards):
-                state += str(c.rank + self._player_index[player_name] * 20)
+                state.append(c.rank + self._player_index[player_name] * 20)
         return state
 
     def replay(self):

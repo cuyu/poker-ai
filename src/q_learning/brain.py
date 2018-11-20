@@ -38,7 +38,7 @@ class RL(object):
             )
 
     def choose_action(self, observation, ai_player):
-        self.check_state_exist(observation.state)
+        self.check_state_exist(str(observation.state))
         # possible actions
         possible_actions = ai_player.possibilities(observation.desk_pool)
         possible_actions_string = [cards_string(c) for c in possible_actions]
@@ -47,7 +47,7 @@ class RL(object):
         # action selection
         if np.random.rand() < self.epsilon:
             # choose best action
-            state_action = self.q_table.loc[observation.state, :]
+            state_action = self.q_table.loc[str(observation.state), :]
             # some actions may have the same value, randomly choose on in these actions
             # if no available actions, then pick the second highest values and so on..
             state_values = list(set(state_action.values))

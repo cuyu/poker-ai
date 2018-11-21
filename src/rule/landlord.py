@@ -44,18 +44,29 @@ class LandlordRule(BasicRule):
         return result
 
     def _possibilities_of_straight(self, hand_cards, target_start_card, length):
+        def _find_rank_in_hands(hand_cards, rank):
+            result = []
+            for card in hand_cards:
+                if card.rank == rank:
+                    result.append(card)
+            return result
+
         assert length >= 5
         result = []
         i = 0
         while i < len(hand_cards) - (length - 1):
             if self.higher(hand_cards[i], target_start_card):
                 is_straight = True
+                possible = {hand_cards[i]}
                 for j in range(1, length):
-                    if not hand_cards[i + j].rank - hand_cards[i].rank == j:
+                    next_cards = _find_rank_in_hands(hand_cards, hand_cards[i].rank + j)
+                    if not next_cards:
                         is_straight = False
                         break
+                    else:
+                        possible.add(next_cards[0])
                 if is_straight:
-                    result.append({*hand_cards[i:i + length]})
+                    result.append(possible)
             i += 1
 
         return result

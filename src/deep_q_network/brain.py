@@ -1,25 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import random
+
 import numpy as np
 import tensorflow as tf
+
+from src.q_learning.brain import cards_string
 
 np.random.seed(1)
 tf.set_random_seed(1)
 
 
 def add_to_enough_length(li, final_length, add_value):
-    result = np.zeros(final_length) + add_value
+    result = np.zeros(final_length, dtype=np.float32) + add_value
     for i in range(len(li)):
         result[i] = li[i]
 
     return result
 
 
+def transfer_state(observation, ai_player):
+    state = np.concatenate((add_to_enough_length([c.rank for c in ai_player.cards], 20, -1) + 1, add_to_enough_length(
+        observation.state, 54, -1) + 1))
+    return state
+
+
 # Deep Q Network off-policy
 class DeepQNetwork(object):
     def __init__(
             self,
-            n_actions,
+            actions,
             n_features,
             learning_rate=0.01,
             reward_decay=0.9,
@@ -30,7 +40,10 @@ class DeepQNetwork(object):
             e_greedy_increment=None,
             output_graph=False,
     ):
-        self.n_actions = n_actions
+        self._action_strings = list(set([cards_string(c) for c in actions]))
+        self.n_actions = len(self._action_strings)
+        self.index2action = {i: self._action_strings[i] for i in range(self.n_actions)}
+        self.action2index = {self._action_strings[i]: i for i in range(self.n_actions)}
         self.n_features = n_features
         self.lr = learning_rate
         self.gamma = reward_decay
@@ -112,7 +125,7 @@ class DeepQNetwork(object):
         if not hasattr(self, 'memory_counter'):
             self.memory_counter = 0
 
-        transition = np.hstack((s, [a, r], s_))
+        transition = np.hstack((s, [self.action2index[a], r], s_))
 
         # replace the old memory with new memory
         index = self.memory_counter % self.memory_size
@@ -122,16 +135,27 @@ class DeepQNetwork(object):
 
     def choose_action(self, observation, ai_player):
         # to have batch dimension when feed into tf placeholder
-        state = add_to_enough_length([c.rank for c in ai_player.cards], 20, -1) + add_to_enough_length(
-            observation.state, 54, -1)
+        state = transfer_state(observation, ai_player)
+
+        possible_actions = ai_player.possibilities(observation.desk_pool)
+        possible_actions_string = list(set([cards_string(c) for c in possible_actions]))
+        # withdraw is always an option
+        possible_actions_string.append('')
 
         if np.random.uniform() < self.epsilon:
             # forward feed the observation and get q value for every actions
-            actions_value = self.sess.run(self.q_eval, feed_dict={self.s: state})
-            # todo: only pick possibilities
-            action = np.argmax(actions_value)
+            actions_value = self.sess.run(self.q_eval, feed_dict={self.s: np.reshape(state, (1, -1))})
+            # only pick possibilities
+            possible_index = [self.action2index[action] for action in possible_actions_string]
+            filtered_action_value = [actions_value[0][i] for i in possible_index]
+            action = self.index2action[possible_index[np.argmax(filtered_action_value)]]
         else:
-            action = np.random.randint(0, self.n_actions)
+            # choose random action
+            if possible_actions_string:
+                action = random.choice(possible_actions_string)
+            else:
+                action = ''
+        ai_player.choose_next_action(action)
         return action
 
     def learn(self):

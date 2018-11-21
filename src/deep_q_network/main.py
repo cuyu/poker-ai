@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 from src.poker import Card
-from src.deep_q_network.brain import DeepQNetwork
+from src.deep_q_network.brain import DeepQNetwork, transfer_state
 from src.rule.landlord import Game, Player, AIPlayer
 
 
@@ -17,8 +17,9 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
     ai_name = list(players.keys())[0]
     last_player_name = list(players.keys())[-1]
     # Remember withdraw is always a optional action
-    RL = DeepQNetwork(n_actions=len(players[ai_name].possibilities([])) + 1, n_features=20 + 54)
+    RL = DeepQNetwork(actions=players[ai_name].possibilities([]) + [{}], n_features=20 + 54)
     ai_win = 0
+    step = 0
     for episode in range(rounds):
         # initial observation
         _players = {}
@@ -34,7 +35,7 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
         action = RL.choose_action(observation, ai_player)
 
         game_progress = observation.start_by_step()
-        previous_state = observation.state
+        previous_state = transfer_state(observation, ai_player)
 
         for player_name, choice in game_progress:
             if observation.winner is None:
@@ -46,17 +47,22 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
                     reward = -1
 
             if player_name == last_player_name and observation.winner is None:
+                step += 1
                 # RL choose action based on next observation
                 action_ = RL.choose_action(observation, ai_player)
 
                 # RL learn from this transition (s, a, r, s, a) ==> Sarsa
-                RL.learn(previous_state, action, reward, observation.state)
+                RL.store_transition(previous_state, action, reward, transfer_state(observation, ai_player))
 
                 # swap observation and action
-                previous_state = observation.state
+                previous_state = transfer_state(observation, ai_player)
                 action = action_
             elif observation.winner is not None:
-                RL.learn(previous_state, action, reward, observation.state)
+                step += 1
+                RL.store_transition(previous_state, action, reward, transfer_state(observation, ai_player))
+
+            if (step > 200) and (step % 5 == 0):
+                RL.learn()
 
         if replay_game:
             observation.replay()
@@ -71,6 +77,7 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
 
     # end of game
     print('game over')
+    RL.plot_cost()
 
 
 if __name__ == "__main__":
@@ -91,4 +98,4 @@ if __name__ == "__main__":
             'p1': AIPlayer([Card(s) for s in p1.split(',')]),
             'p2': Player([Card(s) for s in p2.split(',')]),
             'p3': Player([Card(s) for s in p3.split(',')]),
-        }), desk_pool=[], rounds=300, win_rate_frequency=10, replay_game=False)
+        }), desk_pool=[], rounds=3000, win_rate_frequency=10, replay_game=False)

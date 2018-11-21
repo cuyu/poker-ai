@@ -3,6 +3,7 @@
 import random
 from collections import OrderedDict
 
+from src.deep_q_network.brain import DoubleDQN
 from src.poker import Deck, Card
 
 
@@ -192,7 +193,7 @@ class Game(object):
         continuous_no_choice = 0
         while not game_over:
             player_name, player = players[player_turn % len(players)]
-            choice = player.show_card(self.desk_pool)
+            choice = player.show_card(self)
             if choice:
                 self.desk_pool = choice
                 continuous_no_choice = 0
@@ -270,14 +271,14 @@ class Player(object):
         self.cards = cards
         self.cards.sort()
 
-    def show_card(self, desk_cards):
+    def show_card(self, game):
         """
         Show card according to the cards in desk. Return [] means skip the step.
-        :param desk_cards: List of <Card>
+        :param game: Object of <Game>
         :return: List of <Card>
         """
-        if desk_cards:
-            options = LandlordRule().possibilities(desk_cards, self.cards)
+        if game.desk_pool:
+            options = LandlordRule().possibilities(game.desk_pool, self.cards)
         else:
             options = LandlordRule().all_possibilities(self.cards)
         if options:
@@ -324,8 +325,21 @@ class AIPlayer(Player):
             _cards = []
         self._next_action = _cards
 
-    def show_card(self, desk_cards):
+    def show_card(self, game):
         assert self._next_action is not None
+        for card in self._next_action:
+            self.cards.remove(card)
+        return self._next_action
+
+
+class DQNPlayer(AIPlayer):
+    def __init__(self, cards, model_name):
+        super(AIPlayer, self).__init__(cards)
+        self._next_action = None
+        self._DQN = DoubleDQN(model_name=model_name)
+
+    def show_card(self, game):
+        self._DQN.choose_action(game, self)
         for card in self._next_action:
             self.cards.remove(card)
         return self._next_action

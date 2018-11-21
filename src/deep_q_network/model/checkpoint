@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/CYu/Code/Python/poker-ai/src/deep_q_network/model/ai-01"
+all_model_checkpoint_paths: "/Users/CYu/Code/Python/poker-ai/src/deep_q_network/model/ai-01"

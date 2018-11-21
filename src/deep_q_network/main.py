@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
-from src.poker import Card
+from src.poker import Card, Deck
 from src.deep_q_network.brain import DoubleDQN, DuelingDQN, transfer_state
-from src.rule.landlord import Game, Player, AIPlayer
+from src.rule.landlord import Game, Player, AIPlayer, DQNPlayer
 
 
 def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=True):
@@ -17,7 +17,9 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
     ai_name = list(players.keys())[0]
     last_player_name = list(players.keys())[-1]
     # Remember withdraw is always a optional action
-    RL = DoubleDQN(actions=players[ai_name].possibilities([]) + [{}], n_features=11 + 21, replace_target_iter=100, memory_size=200)
+    RL = DoubleDQN(actions=players[ai_name].possibilities([]) + [{}], n_features=20 + 54, replace_target_iter=200,
+                   memory_size=200)
+    # RL = DoubleDQN(model_name='ai-01')
     # RL = DuelingDQN(actions=players[ai_name].possibilities([]) + [{}], n_features=20 + 54, replace_target_iter=100, memory_size=200)
     ai_win = 0
     step = 0
@@ -81,6 +83,32 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
     RL.plot_cost()
 
 
+def play(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=True):
+    ai_name = list(players.keys())[0]
+    ai_win = 0
+
+    _players = {}
+    for name in players:
+        _players[name] = list(players[name].cards)
+    for episode in range(rounds):
+        # Restore the cards for each player (as the cards in hands are mutable)
+        for name in players:
+            players[name].cards = list(_players[name])
+
+        game = Game(players, desk_pool=desk_pool)
+        game.start()
+        if game.winner == ai_name:
+            ai_win += 1
+
+        if replay_game:
+            game.replay()
+
+        if (episode + 1) % win_rate_frequency == 0:
+            print('AI win rate for last {0} rounds: {1}'.format(win_rate_frequency,
+                                                                float(ai_win) / float(win_rate_frequency)))
+            ai_win = 0
+
+
 if __name__ == "__main__":
     scenario = 2
 
@@ -95,8 +123,20 @@ if __name__ == "__main__":
         p1 = '3s,3d,5s,5h,6s,6d,6h,2s,2d,2h,4s'
         p2 = 'Ks,Kd,Kc,9s,9d,Vv'
         p3 = 'Jc,Jd,Jh,2c'
-        train(OrderedDict({
-            'p1': AIPlayer([Card(s) for s in p1.split(',')]),
+        # train(OrderedDict({
+        #     'p1': AIPlayer([Card(s) for s in p1.split(',')]),
+        #     'p2': Player([Card(s) for s in p2.split(',')]),
+        #     'p3': Player([Card(s) for s in p3.split(',')]),
+        # }), desk_pool=[], rounds=5000, win_rate_frequency=20, replay_game=False)
+        play(OrderedDict({
+            'p1': DQNPlayer([Card(s) for s in p1.split(',')], model_name='ai-01'),
             'p2': Player([Card(s) for s in p2.split(',')]),
             'p3': Player([Card(s) for s in p3.split(',')]),
-        }), desk_pool=[], rounds=10000, win_rate_frequency=10, replay_game=False)
+        }), desk_pool=[], rounds=5000, win_rate_frequency=20, replay_game=False)
+    elif scenario == 'standard game':
+        deck = Deck(has_jokers=True)
+        train(OrderedDict({
+            'p1': AIPlayer(deck.draw(20)),
+            'p2': Player(deck.draw(17)),
+            'p3': Player(deck.draw(17)),
+        }), desk_pool=[], rounds=5000, win_rate_frequency=20, replay_game=False)

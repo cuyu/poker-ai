@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import pickle
 import random
-
+import os
 import numpy as np
 import tensorflow as tf
 
 from src.q_learning.brain import cards_string
 
+_CURRENT_DIR = os.path.dirname(__file__)
 np.random.seed(1)
 tf.set_random_seed(1)
 
@@ -20,16 +22,16 @@ def add_to_enough_length(li, final_length, add_value):
 
 
 def transfer_state(observation, ai_player):
-    state = np.concatenate((add_to_enough_length([c.rank for c in ai_player.cards], 11, -1) + 1, add_to_enough_length(
-        observation.state, 21, -1) + 1)) / 80.0
+    state = np.concatenate((add_to_enough_length([c.rank for c in ai_player.cards], 20, -1) + 1, add_to_enough_length(
+        observation.state, 54, -1) + 1)) / 80.0
     return state
 
 
 class DoubleDQN(object):
     def __init__(
             self,
-            actions,
-            n_features,
+            actions=None,
+            n_features=None,
             learning_rate=0.005,
             reward_decay=0.9,
             e_greedy=0.9,
@@ -40,33 +42,42 @@ class DoubleDQN(object):
             output_graph=False,
             double_q=True,
             sess=None,
+            model_name=None,
     ):
-        self._action_strings = list(set([cards_string(c) for c in actions]))
-        self.n_actions = len(self._action_strings)
-        self.index2action = {i: self._action_strings[i] for i in range(self.n_actions)}
-        self.action2index = {self._action_strings[i]: i for i in range(self.n_actions)}
-        self.n_features = n_features
-        self.lr = learning_rate
-        self.gamma = reward_decay
-        self.epsilon_max = e_greedy
-        self.replace_target_iter = replace_target_iter
-        self.memory_size = memory_size
-        self.batch_size = batch_size
-        self.epsilon_increment = e_greedy_increment
-        self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
+        if model_name:
+            self._restore_hyperparameters(model_name)
+        else:
+            self._action_strings = list(set([cards_string(c) for c in actions]))
+            self.n_actions = len(self._action_strings)
+            self.index2action = {i: self._action_strings[i] for i in range(self.n_actions)}
+            self.action2index = {self._action_strings[i]: i for i in range(self.n_actions)}
+            self.n_features = n_features
+            self.lr = learning_rate
+            self.gamma = reward_decay
+            self.epsilon_max = e_greedy
+            self.replace_target_iter = replace_target_iter
+            self.memory_size = memory_size
+            self.batch_size = batch_size
+            self.epsilon_increment = e_greedy_increment
+            self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
 
-        self.double_q = double_q    # decide to use double q or not
+            self.double_q = double_q  # decide to use double q or not
 
-        self.learn_step_counter = 0
-        self.memory = np.zeros((self.memory_size, n_features*2+2))
+            self.learn_step_counter = 0
+            self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
+
         self._build_net()
         t_params = tf.get_collection('target_net_params')
         e_params = tf.get_collection('eval_net_params')
         self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
         if sess is None:
-            self.sess = tf.Session()
-            self.sess.run(tf.global_variables_initializer())
+            if model_name is None:
+                self.sess = tf.Session()
+                self.sess.run(tf.global_variables_initializer())
+            else:
+                self.sess = tf.Session()
+                self._restore_parameters(model_name)
         else:
             self.sess = sess
         if output_graph:
@@ -85,6 +96,7 @@ class DoubleDQN(object):
                 b2 = tf.get_variable('b2', [1, self.n_actions], initializer=b_initializer, collections=c_names)
                 out = tf.matmul(l1, w2) + b2
             return out
+
         # ------------------ build evaluate_net ------------------
         self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input
         self.q_target = tf.placeholder(tf.float32, [None, self.n_actions], name='Q_target')  # for calculating loss
@@ -102,7 +114,7 @@ class DoubleDQN(object):
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
         # ------------------ build target_net ------------------
-        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
+        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')  # input
         with tf.variable_scope('target_net'):
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
@@ -154,8 +166,8 @@ class DoubleDQN(object):
 
         q_next, q_eval4next = self.sess.run(
             [self.q_next, self.q_eval],
-            feed_dict={self.s_: batch_memory[:, -self.n_features:],    # next observation
-                       self.s: batch_memory[:, -self.n_features:]})    # next observation
+            feed_dict={self.s_: batch_memory[:, -self.n_features:],  # next observation
+                       self.s: batch_memory[:, -self.n_features:]})  # next observation
         q_eval = self.sess.run(self.q_eval, {self.s: batch_memory[:, :self.n_features]})
 
         q_target = q_eval.copy()
@@ -165,10 +177,11 @@ class DoubleDQN(object):
         reward = batch_memory[:, self.n_features + 1]
 
         if self.double_q:
-            max_act4next = np.argmax(q_eval4next, axis=1)        # the action that brings the highest value is evaluated by q_eval
+            max_act4next = np.argmax(q_eval4next,
+                                     axis=1)  # the action that brings the highest value is evaluated by q_eval
             selected_q_next = q_next[batch_index, max_act4next]  # Double DQN, select q_next depending on above actions
         else:
-            selected_q_next = np.max(q_next, axis=1)    # the natural DQN
+            selected_q_next = np.max(q_next, axis=1)  # the natural DQN
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * selected_q_next
 
@@ -179,6 +192,34 @@ class DoubleDQN(object):
 
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         self.learn_step_counter += 1
+
+    def _save_parameters(self, model_name):
+        saver = tf.train.Saver(tf.global_variables())
+        saver.save(self.sess, save_path=os.path.join(_CURRENT_DIR, 'model', model_name))
+
+    def _save_hyperparameters(self, model_name):
+        attributes = ['_action_strings', 'action2index', 'batch_size', 'double_q', 'epsilon', 'epsilon_increment',
+                      'epsilon_max', 'gamma', 'index2action', 'lr', 'memory_size', 'n_actions', 'n_features']
+        hyperparameters = {
+            name: getattr(self, name) for name in attributes
+        }
+        with open(os.path.join(_CURRENT_DIR, 'model', model_name + '.pkl'), 'wb') as f:
+            pickle.dump(hyperparameters, f)
+
+    def save(self, model_name):
+        self._save_hyperparameters(model_name)
+        self._save_parameters(model_name)
+
+    def _restore_parameters(self, model_name):
+        saver = tf.train.Saver(tf.global_variables())
+        saver.restore(self.sess, save_path=os.path.join(_CURRENT_DIR, 'model', model_name))
+
+    def _restore_hyperparameters(self, model_name):
+        with open(os.path.join(_CURRENT_DIR, 'model', model_name + '.pkl'), 'rb') as f:
+            hyperparameters = pickle.load(f)
+
+        for name in hyperparameters:
+            setattr(self, name, hyperparameters[name])
 
 
 class DuelingDQN(object):
@@ -211,10 +252,10 @@ class DuelingDQN(object):
         self.epsilon_increment = e_greedy_increment
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
 
-        self.dueling = dueling      # decide to use dueling DQN or not
+        self.dueling = dueling  # decide to use dueling DQN or not
 
         self.learn_step_counter = 0
-        self.memory = np.zeros((self.memory_size, n_features*2+2))
+        self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
         self._build_net()
         t_params = tf.get_collection('target_net_params')
         e_params = tf.get_collection('eval_net_params')
@@ -249,7 +290,7 @@ class DuelingDQN(object):
                     self.A = tf.matmul(l1, w2) + b2
 
                 with tf.variable_scope('Q'):
-                    out = self.V + (self.A - tf.reduce_mean(self.A, axis=1, keep_dims=True))     # Q = V(s) + A(s,a)
+                    out = self.V + (self.A - tf.reduce_mean(self.A, axis=1, keep_dims=True))  # Q = V(s) + A(s,a)
             else:
                 with tf.variable_scope('Q'):
                     w2 = tf.get_variable('w2', [n_l1, self.n_actions], initializer=w_initializer, collections=c_names)
@@ -274,7 +315,7 @@ class DuelingDQN(object):
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
         # ------------------ build target_net ------------------
-        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')    # input
+        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')  # input
         with tf.variable_scope('target_net'):
             c_names = ['target_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
 
@@ -321,7 +362,7 @@ class DuelingDQN(object):
         sample_index = np.random.choice(self.memory_size, size=self.batch_size)
         batch_memory = self.memory[sample_index, :]
 
-        q_next = self.sess.run(self.q_next, feed_dict={self.s_: batch_memory[:, -self.n_features:]}) # next observation
+        q_next = self.sess.run(self.q_next, feed_dict={self.s_: batch_memory[:, -self.n_features:]})  # next observation
         q_eval = self.sess.run(self.q_eval, {self.s: batch_memory[:, :self.n_features]})
 
         q_target = q_eval.copy()

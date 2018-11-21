@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 from src.poker import Card
-from src.deep_q_network.brain import DeepQNetwork, transfer_state
+from src.deep_q_network.brain import DoubleDQN, DuelingDQN, transfer_state
 from src.rule.landlord import Game, Player, AIPlayer
 
 
@@ -17,7 +17,8 @@ def train(players, desk_pool, rounds=100, win_rate_frequency=100, replay_game=Tr
     ai_name = list(players.keys())[0]
     last_player_name = list(players.keys())[-1]
     # Remember withdraw is always a optional action
-    RL = DeepQNetwork(actions=players[ai_name].possibilities([]) + [{}], n_features=20 + 54)
+    RL = DoubleDQN(actions=players[ai_name].possibilities([]) + [{}], n_features=11 + 21, replace_target_iter=100, memory_size=200)
+    # RL = DuelingDQN(actions=players[ai_name].possibilities([]) + [{}], n_features=20 + 54, replace_target_iter=100, memory_size=200)
     ai_win = 0
     step = 0
     for episode in range(rounds):
@@ -98,4 +99,4 @@ if __name__ == "__main__":
             'p1': AIPlayer([Card(s) for s in p1.split(',')]),
             'p2': Player([Card(s) for s in p2.split(',')]),
             'p3': Player([Card(s) for s in p3.split(',')]),
-        }), desk_pool=[], rounds=3000, win_rate_frequency=10, replay_game=False)
+        }), desk_pool=[], rounds=10000, win_rate_frequency=10, replay_game=False)
